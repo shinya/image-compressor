@@ -129,6 +129,14 @@ go get github.com/chai2010/webp
 go get github.com/disintegration/imaging
 ```
 
+## Releases
+
+The latest release can be found on the [GitHub releases page](https://github.com/shinya/image-compressor/releases).
+
+### Installation
+
+Download the latest release for your platform from the [releases page](https://github.com/shinya/image-compressor/releases).
+
 ## Contributing
 
 Pull requests and issue reports are welcome.
