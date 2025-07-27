@@ -1,81 +1,83 @@
-# 画像圧縮ツール
+# Image Compression Tool
 
-PNG、JPG、JPEG、GIF形式の画像をWebP形式に変換・圧縮するWebアプリケーションです。
+A web application that converts and compresses PNG, JPG, JPEG, and GIF images to WebP format.
 
-## 機能
+[日本語版はこちら](README_ja.md)
 
-- **対応形式**: PNG、JPG、JPEG、GIF → WebP
-- **圧縮設定**: 品質（1-100）、幅、高さの調整が可能
-- **ドラッグ&ドロップ**: 直感的なファイルアップロード
-- **リアルタイムプレビュー**: アップロードした画像のプレビュー表示
-- **圧縮結果表示**: 元のサイズ、圧縮後サイズ、圧縮率を表示
-- **ダウンロード機能**: 圧縮後の画像をダウンロード
+## Features
 
-## 技術スタック
+- **Supported Formats**: PNG, JPG, JPEG, GIF → WebP
+- **Compression Settings**: Adjustable quality (1-100), width, and height
+- **Drag & Drop**: Intuitive file upload interface
+- **Real-time Preview**: Preview of uploaded images
+- **Compression Results**: Display original size, compressed size, and compression ratio
+- **Download Function**: Download compressed images
 
-- **バックエンド**: Go + Gin
-- **画像処理**: imaging + webp
-- **フロントエンド**: HTML + CSS + JavaScript
-- **コンテナ**: Docker + Docker Compose
+## Technology Stack
 
-## セットアップ
+- **Backend**: Go + Gin
+- **Image Processing**: imaging + webp
+- **Frontend**: HTML + CSS + JavaScript
+- **Container**: Docker + Docker Compose
 
-### 前提条件
+## Setup
+
+### Prerequisites
 
 - Docker
 - Docker Compose
 
-### 起動方法
+### Quick Start
 
-1. リポジトリをクローン
+1. Clone the repository
 ```bash
 git clone <repository-url>
 cd image-compressor
 ```
 
-2. Docker Composeで起動
+2. Start with Docker Compose
 ```bash
 docker-compose up --build
 ```
 
-3. ブラウザでアクセス
+3. Access in your browser
 ```
 http://localhost:8080
 ```
 
-## 使用方法
+## Usage
 
-1. **画像アップロード**
-   - ドラッグ&ドロップまたはクリックして画像を選択
-   - 対応形式: PNG、JPG、JPEG、GIF
-   - 最大ファイルサイズ: 10MB
+1. **Image Upload**
+   - Drag & drop or click to select an image
+   - Supported formats: PNG, JPG, JPEG, GIF
+   - Maximum file size: 10MB
 
-2. **圧縮設定**（オプション）
-   - **品質**: 1-100の範囲で設定（デフォルト: 80）
-   - **幅**: ピクセル単位で指定（空欄で自動調整）
-   - **高さ**: ピクセル単位で指定（空欄で自動調整）
+2. **Compression Settings** (Optional)
+   - **Quality**: Set between 1-100 (default: 80)
+   - **Width**: Specify in pixels (leave blank for auto-adjustment)
+   - **Height**: Specify in pixels (leave blank for auto-adjustment)
 
-3. **圧縮実行**
-   - 「圧縮開始」ボタンをクリック
-   - 処理中はローディング表示
+3. **Start Compression**
+   - Click "Start Compression" button
+   - Loading indicator will be displayed during processing
 
-4. **結果確認・ダウンロード**
-   - 圧縮結果が表示される
-   - 「ダウンロード」ボタンで圧縮後の画像をダウンロード
+4. **View Results & Download**
+   - Compression results will be displayed
+   - Click "Download" button to download the compressed image
 
-## API仕様
+## API Specification
 
-### 画像圧縮API
+### Image Compression API
 
-**エンドポイント**: `POST /api/compress`
+**Endpoint**: `POST /api/compress`
 
-**リクエスト**:
-- `image`: 画像ファイル（multipart/form-data）
-- `quality`: 品質（1-100、オプション）
-- `width`: 幅（ピクセル、オプション）
-- `height`: 高さ（ピクセル、オプション）
+**Request**:
+- `image`: Image file (multipart/form-data)
+- `quality`: Quality (1-100, optional)
+- `width`: Width in pixels (optional)
+- `height`: Height in pixels (optional)
 
-**レスポンス**:
+**Response**:
 ```json
 {
   "success": true,
@@ -85,40 +87,41 @@ http://localhost:8080
     "original_size": 1024000,
     "compressed_size": 256000,
     "compression_ratio": 25.0,
+    "processing_time": 1.23,
     "download_url": "/api/download/example_compressed.webp"
   }
 }
 ```
 
-### ダウンロードAPI
+### Download API
 
-**エンドポイント**: `GET /api/download/:filename`
+**Endpoint**: `GET /api/download/:filename`
 
-**レスポンス**: 圧縮された画像ファイル
+**Response**: Compressed image file
 
-## 環境変数
+## Environment Variables
 
-| 変数名 | デフォルト値 | 説明 |
-|--------|-------------|------|
-| `PORT` | `8080` | サーバーのポート番号 |
-| `DOWNLOAD_DIR` | `./downloads` | 圧縮後のファイル保存ディレクトリ |
+| Variable | Default Value | Description |
+|----------|---------------|-------------|
+| `PORT` | `8080` | Server port number |
+| `DOWNLOAD_DIR` | `./downloads` | Directory for compressed files |
 
-## 開発
+## Development
 
-### ローカル開発環境
+### Local Development Environment
 
-1. Goをインストール
-2. 依存関係をインストール
+1. Install Go
+2. Install dependencies
 ```bash
 go mod tidy
 ```
 
-3. サーバーを起動
+3. Start the server
 ```bash
 go run cmd/server/main.go
 ```
 
-### 依存関係
+### Dependencies
 
 ```bash
 go get github.com/gin-gonic/gin
@@ -126,10 +129,6 @@ go get github.com/chai2010/webp
 go get github.com/disintegration/imaging
 ```
 
-## ライセンス
+## Contributing
 
-MIT License
-
-## 貢献
-
-プルリクエストやイシューの報告を歓迎します。 
+Pull requests and issue reports are welcome.
