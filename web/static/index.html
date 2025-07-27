@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像圧縮ツール</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>画像圧縮ツール</h1>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon" id="uploadIcon">📁</div>
+            <div class="upload-text" id="uploadText">画像をドラッグ&ドロップまたはクリックして選択</div>
+            <div class="file-info" id="fileInfo" style="display: none;">
+                <div class="selected-file">
+                    <span class="file-name" id="fileName"></span>
+                    <span class="file-size" id="fileSize"></span>
+                </div>
+                <button class="change-file-btn" id="changeFileBtn">別のファイルを選択</button>
+            </div>
+            <div style="color: #999; font-size: 0.9em;">PNG, JPG, JPEG, GIF → WebP</div>
+            <input type="file" id="fileInput" class="file-input" accept=".png,.jpg,.jpeg,.gif">
+        </div>
+
+        <div class="options">
+            <div class="option-group">
+                <label>品質 (1-100):</label>
+                <input type="number" id="quality" value="80" min="1" max="100">
+            </div>
+            <div class="option-group">
+                <label>幅 (px):</label>
+                <input type="number" id="width" placeholder="自動">
+            </div>
+            <div class="option-group">
+                <label>高さ (px):</label>
+                <input type="number" id="height" placeholder="自動">
+            </div>
+        </div>
+
+        <button class="compress-btn" id="compressBtn" disabled>圧縮開始</button>
+
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>画像を圧縮中...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <h3>✅ 圧縮完了</h3>
+            <img id="preview" class="preview" style="display: none;">
+            <div class="result-info">
+                <div class="info-item">
+                    <div class="info-label">元のサイズ</div>
+                    <div class="info-value" id="originalSize">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">圧縮後サイズ</div>
+                    <div class="info-value" id="compressedSize">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">圧縮率</div>
+                    <div class="info-value" id="compressionRatio">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">ファイル名</div>
+                    <div class="info-value" id="filename">-</div>
+                </div>
+            </div>
+            <a href="#" class="download-btn" id="downloadBtn" target="_blank" style="display: none;">ダウンロード</a>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html> 
