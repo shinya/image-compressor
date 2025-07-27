@@ -129,6 +129,14 @@ go get github.com/chai2010/webp
 go get github.com/disintegration/imaging
 ```
 
+## リリース
+
+最新のリリースは[GitHubリリースページ](https://github.com/shinya/image-compressor/releases)で確認できます。
+
+### インストール
+
+[リリースページ](https://github.com/shinya/image-compressor/releases)からお使いのプラットフォーム用の最新リリースをダウンロードしてください。
+
 ## 貢献
 
 プルリクエストやイシュー歓迎です。 

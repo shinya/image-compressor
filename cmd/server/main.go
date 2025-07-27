@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -10,7 +12,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
+)
+
 func main() {
+	// バージョン情報の表示
+	var showVersion bool
+	flag.BoolVar(&showVersion, "version", false, "Show version information")
+	flag.Parse()
+
+	if showVersion {
+		fmt.Printf("Image Compressor v%s\n", version)
+		fmt.Printf("Commit: %s\n", commit)
+		fmt.Printf("Build Date: %s\n", date)
+		return
+	}
+
 	// 設定を読み込み
 	cfg := config.Load()
 
@@ -41,11 +61,20 @@ func main() {
 		c.HTML(http.StatusOK, "index.html", nil)
 	})
 
+	// バージョン情報API
+	r.GET("/version", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"version": version,
+			"commit":  commit,
+			"date":    date,
+		})
+	})
+
 	// APIルート
 	api.SetupRoutes(r)
 
 	// サーバー起動
-	log.Printf("Server starting on port %s", cfg.Port)
+	log.Printf("Image Compressor v%s starting on port %s", version, cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
