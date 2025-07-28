@@ -38,7 +38,6 @@ archives:
       - README.md
       - README_ja.md
       - web/static/*
-    format: tar.gz
 
 checksum:
   name_template: 'checksums.txt'
