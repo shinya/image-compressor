@@ -21,8 +21,7 @@ builds:
       - -X main.date={{.Date}}
     hooks:
       pre: ./scripts/pre-build.sh
-    ignore:
-      - goos == "windows" && goarch == "arm64"
+
 
 archives:
   - format: tar.gz
@@ -61,6 +60,4 @@ release:
   prerelease: false
 
 dist:
-  name: image-compressor
-  dist: dist
-  version: "{{ .Version }}" 
+  name: image-compressor 
