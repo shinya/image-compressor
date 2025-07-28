@@ -1,8 +1,8 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -12,11 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Handler APIハンドラー
 type Handler struct {
 	imageService *service.ImageService
 	config       *config.Config
 }
 
+// NewHandler 新しいハンドラーを作成
 func NewHandler(cfg *config.Config) *Handler {
 	return &Handler{
 		imageService: service.NewImageService(cfg),
@@ -24,9 +26,10 @@ func NewHandler(cfg *config.Config) *Handler {
 	}
 }
 
+// CompressImage 画像圧縮API
 func (h *Handler) CompressImage(c *gin.Context) {
-	// ファイルを取得
-	file, err := c.FormFile("image")
+	// ファイルの取得
+	file, header, err := c.Request.FormFile("image")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
@@ -34,9 +37,10 @@ func (h *Handler) CompressImage(c *gin.Context) {
 		})
 		return
 	}
+	defer file.Close()
 
 	// ファイルの検証
-	if err := h.imageService.ValidateFile(file); err != nil {
+	if err := h.imageService.ValidateFile(file, header); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"error":   err.Error(),
@@ -44,62 +48,52 @@ func (h *Handler) CompressImage(c *gin.Context) {
 		return
 	}
 
-	// 圧縮オプションを取得
-	options := &service.CompressionOptions{
-		Quality: h.config.DefaultQuality,
-		Width:   h.config.DefaultWidth,
-		Height:  h.config.DefaultHeight,
-	}
-
+	// 圧縮オプションの取得
+	quality := h.config.DefaultQuality
 	if qualityStr := c.PostForm("quality"); qualityStr != "" {
-		if quality, err := strconv.Atoi(qualityStr); err == nil && quality >= 1 && quality <= 100 {
-			options.Quality = quality
+		if q, err := strconv.Atoi(qualityStr); err == nil && q >= 0 && q <= 100 {
+			quality = q
 		}
 	}
 
+	width := h.config.DefaultWidth
 	if widthStr := c.PostForm("width"); widthStr != "" {
-		if width, err := strconv.Atoi(widthStr); err == nil && width > 0 {
-			options.Width = width
+		if w, err := strconv.Atoi(widthStr); err == nil && w > 0 {
+			width = w
 		}
 	}
 
+	height := h.config.DefaultHeight
 	if heightStr := c.PostForm("height"); heightStr != "" {
-		if height, err := strconv.Atoi(heightStr); err == nil && height > 0 {
-			options.Height = height
+		if h, err := strconv.Atoi(heightStr); err == nil && h > 0 {
+			height = h
 		}
 	}
 
-	// 画像を圧縮
-	result, err := h.imageService.CompressImage(file, options)
+	// 画像の圧縮
+	result, err := h.imageService.CompressImage(file, quality, width, height)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
-			"error":   "Failed to compress image: " + err.Error(),
+			"error":   fmt.Sprintf("Failed to compress image: %v", err),
 		})
 		return
 	}
 
-	// 出力ファイル名を生成
-	originalName := filepath.Base(file.Filename)
-	ext := filepath.Ext(originalName)
-	baseName := strings.TrimSuffix(originalName, ext)
-	outputFileName := baseName + "_compressed.webp"
-
-	// レスポンスを返す
+	// 成功レスポンス
 	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data": gin.H{
-			"original_filename":   file.Filename,
-			"compressed_filename": outputFileName,
-			"original_size":       result.OriginalSize,
-			"compressed_size":     result.CompressedSize,
-			"compression_ratio":   result.CompressionRatio,
-			"processing_time":     result.ProcessingTime,
-			"download_url":        "/api/download/" + outputFileName,
-		},
+		"success":           true,
+		"message":           "Image compressed successfully",
+		"original_size":     result.OriginalSize,
+		"compressed_size":   result.CompressedSize,
+		"compression_ratio": result.CompressionRatio,
+		"processing_time":   result.ProcessingTime,
+		"output_file":       result.OutputFileName,
+		"download_url":      fmt.Sprintf("/api/download/%s", result.OutputFileName),
 	})
 }
 
+// DownloadFile ファイルダウンロードAPI
 func (h *Handler) DownloadFile(c *gin.Context) {
 	filename := c.Param("filename")
 	if filename == "" {
@@ -110,21 +104,20 @@ func (h *Handler) DownloadFile(c *gin.Context) {
 		return
 	}
 
-	filePath := filepath.Join(h.config.DownloadDir, filename)
-
-	// ファイルの存在確認
-	if _, err := h.imageService.GetFileSize(filePath); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
+	// セキュリティチェック（パストラバーサル攻撃を防ぐ）
+	if strings.Contains(filename, "..") || strings.Contains(filename, "/") {
+		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "File not found",
+			"error":   "Invalid filename",
 		})
 		return
 	}
 
-	// ファイルをダウンロード
+	filePath := fmt.Sprintf("%s/%s", h.config.DownloadDir, filename)
 	c.File(filePath)
 }
 
+// SetupRoutes ルートの設定
 func SetupRoutes(r *gin.Engine) {
 	cfg := config.Load()
 	handler := NewHandler(cfg)

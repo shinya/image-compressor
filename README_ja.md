@@ -1,142 +1,169 @@
-# 画像圧縮ツール
+# Image Compressor
 
-PNG、JPG、JPEG、GIF形式の画像をWebP形式に変換・圧縮するWebアプリケーションです。
+PNG、JPG（JPEG）、GIF画像をWebP形式に変換する高性能な画像圧縮サービスです。圧縮率と解像度のパラメータをオプションで設定できます。
 
 [English version is here](README.md)
 
 ## 機能
 
-- **対応形式**: PNG、JPG、JPEG、GIF → WebP
-- **圧縮設定**: 品質（1-100）、幅、高さの調整が可能
-- **ドラッグ&ドロップ**: 直感的なファイルアップロード
-- **リアルタイムプレビュー**: アップロードした画像のプレビュー表示
-- **圧縮結果表示**: 元のサイズ、圧縮後サイズ、圧縮率を表示
-- **ダウンロード機能**: 圧縮後の画像をダウンロード
+- **対応画像形式**: PNG、JPG（JPEG）、GIF → WebP変換
+- **圧縮オプション**: 品質、幅、高さのパラメータ設定可能
+- **Webインターフェース**: シンプルで直感的な単一ページHTMLインターフェース
+- **APIエンドポイント**: プログラムからのアクセス用RESTful API
+- **高性能**: Goで構築された最適なパフォーマンス
+- **Docker対応**: DockerとDocker Composeによる簡単なデプロイ
 
-## 技術スタック
+## クイックスタート
 
-- **バックエンド**: Go + Gin
-- **画像処理**: imaging + webp
-- **フロントエンド**: HTML + CSS + JavaScript
-- **コンテナ**: Docker + Docker Compose
+### Docker Composeを使用（推奨）
 
-## セットアップ
-
-### 前提条件
-
-- Docker
-- Docker Compose
-
-### 起動方法
-
-1. リポジトリをクローン
 ```bash
-git clone <repository-url>
+# リポジトリをクローン
+git clone https://github.com/shinya/image-compressor.git
 cd image-compressor
+
+# サービスを起動
+docker-compose up -d
+
+# Webインターフェースにアクセス
+open http://localhost:8080
 ```
 
-2. Docker Composeで起動
+### 手動インストール
+
 ```bash
-docker-compose up --build
+# 前提条件
+sudo apt-get update
+sudo apt-get install -y gcc libc6-dev libwebp-dev
+
+# アプリケーションをビルド
+go build -o image-compressor ./cmd/server
+
+# アプリケーションを実行
+./image-compressor
 ```
 
-3. ブラウザでアクセス
-```
-http://localhost:8080
-```
+## API使用方法
 
-## 使用方法
-
-1. **画像アップロード**
-   - ドラッグ&ドロップまたはクリックして画像を選択
-   - 対応形式: PNG、JPG、JPEG、GIF
-   - 最大ファイルサイズ: 10MB
-
-2. **圧縮設定**（オプション）
-   - **品質**: 1-100の範囲で設定（デフォルト: 80）
-   - **幅**: ピクセル単位で指定（空欄で自動調整）
-   - **高さ**: ピクセル単位で指定（空欄で自動調整）
-
-3. **圧縮実行**
-   - 「圧縮開始」ボタンをクリック
-   - 処理中はローディング表示
-
-4. **結果確認・ダウンロード**
-   - 圧縮結果が表示される
-   - 「ダウンロード」ボタンで圧縮後の画像をダウンロード
-
-## API仕様
-
-### 画像圧縮API
+### 画像圧縮
 
 **エンドポイント**: `POST /api/compress`
 
-**リクエスト**:
-- `image`: 画像ファイル（multipart/form-data）
-- `quality`: 品質（1-100、オプション）
-- `width`: 幅（ピクセル、オプション）
-- `height`: 高さ（ピクセル、オプション）
+**フォームデータ**:
+- `image`: 画像ファイル（PNG、JPG、JPEG、GIF）
+- `quality`: 圧縮品質（0-100、オプション）
+- `width`: 目標幅（オプション）
+- `height`: 目標高さ（オプション）
 
 **レスポンス**:
 ```json
 {
   "success": true,
-  "data": {
-    "original_filename": "example.png",
-    "compressed_filename": "example_compressed.webp",
-    "original_size": 1024000,
-    "compressed_size": 256000,
-    "compression_ratio": 25.0,
-    "processing_time": 1.23,
-    "download_url": "/api/download/example_compressed.webp"
-  }
+  "message": "Image compressed successfully",
+  "original_size": 1024000,
+  "compressed_size": 256000,
+  "compression_ratio": 75.0,
+  "processing_time": 0.5,
+  "output_file": "compressed_1234567890.webp",
+  "download_url": "/api/download/compressed_1234567890.webp"
 }
 ```
 
-### ダウンロードAPI
+### 圧縮ファイルのダウンロード
 
-**エンドポイント**: `GET /api/download/:filename`
+**エンドポイント**: `GET /api/download/{filename}`
 
-**レスポンス**: 圧縮された画像ファイル
+圧縮されたWebPファイルを返します。
 
-## 環境変数
+## 設定
 
-| 変数名 | デフォルト値 | 説明 |
-|--------|-------------|------|
-| `PORT` | `8080` | サーバーのポート番号 |
-| `DOWNLOAD_DIR` | `./downloads` | 圧縮後のファイル保存ディレクトリ |
+環境変数を使用してアプリケーションを設定できます：
+
+```bash
+PORT=8080                    # サーバーポート（デフォルト: 8080）
+DOWNLOAD_DIR=./downloads     # ダウンロードディレクトリ（デフォルト: ./downloads）
+MAX_FILE_SIZE=10485760       # 最大ファイルサイズ（バイト）（デフォルト: 10MB）
+DEFAULT_QUALITY=80          # デフォルト圧縮品質（デフォルト: 80）
+DEFAULT_WIDTH=1920          # デフォルト幅（デフォルト: 1920）
+DEFAULT_HEIGHT=1080         # デフォルト高さ（デフォルト: 1080）
+```
 
 ## 開発
 
-### ローカル開発環境
+### 前提条件
 
-1. Goをインストール
-2. 依存関係をインストール
-```bash
-go mod tidy
-```
+- Go 1.24以降
+- GCCと開発ライブラリ
+- libwebp-dev
 
-3. サーバーを起動
-```bash
-go run cmd/server/main.go
-```
-
-### 依存関係
+### ローカル開発
 
 ```bash
-go get github.com/gin-gonic/gin
-go get github.com/chai2010/webp
-go get github.com/disintegration/imaging
+# 依存関係をインストール
+go mod download
+
+# アプリケーションを実行
+go run ./cmd/server
+
+# テストを実行
+go test ./...
+
+# 開発用にビルド
+go build -o image-compressor ./cmd/server
 ```
 
-## リリース
+### Docker開発
 
-最新のリリースは[GitHubリリースページ](https://github.com/shinya/image-compressor/releases)で確認できます。
+```bash
+# 開発イメージをビルド
+docker build -t image-compressor-dev .
 
-### インストール
+# ボリュームマウントで開発実行
+docker run -p 8080:8080 -v $(pwd):/app image-compressor-dev
+```
 
-[リリースページ](https://github.com/shinya/image-compressor/releases)からお使いのプラットフォーム用の最新リリースをダウンロードしてください。
+## プロジェクト構造
+
+```
+image-compressor/
+├── cmd/server/              # メインアプリケーションエントリーポイント
+│   └── main.go             # サーバー起動と設定
+├── internal/
+│   ├── api/                # HTTPハンドラーとルーティング
+│   │   └── handlers.go     # APIエンドポイント実装
+│   ├── config/             # 設定管理
+│   │   └── config.go       # 環境とアプリ設定
+│   └── service/            # ビジネスロジックと画像処理
+│       └── image_service.go # 画像圧縮ロジック
+├── web/static/             # フロントエンドファイル
+│   ├── index.html          # メインHTMLページ
+│   ├── style.css           # CSSスタイル
+│   └── app.js              # JavaScript機能
+├── downloads/              # 圧縮ファイルストレージ
+├── scripts/                # ユーティリティスクリプト
+│   └── pre-build.sh       # ビルド前検証スクリプト
+├── .github/workflows/      # GitHub Actions
+│   └── test.yml           # 自動テストワークフロー
+├── Dockerfile              # 本番Dockerイメージ
+├── docker-compose.yml      # 開発環境
+├── go.mod                  # Goモジュール依存関係
+├── go.sum                  # Goモジュールチェックサム
+├── .gitignore              # Git無視パターン
+├── README.md               # 英語ドキュメント
+└── README_ja.md           # 日本語ドキュメント
+```
+
+## 技術スタック
+
+- **バックエンド**: Go 1.24 + Gin Webフレームワーク
+- **画像処理**: 
+  - `github.com/chai2010/webp` for WebPエンコーディング
+  - `github.com/disintegration/imaging` for 画像操作
+- **フロントエンド**: HTML5 + CSS3 + バニラJavaScript
+- **コンテナ**: Docker + Docker Compose
+- **テスト**: GitHub Actions for 自動テスト
 
 ## 貢献
 
-プルリクエストやイシュー歓迎です。 
+貢献を歓迎します！プルリクエストを自由に送信してください。
+

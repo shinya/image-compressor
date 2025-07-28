@@ -1,142 +1,169 @@
-# Image Compression Tool
+# Image Compressor
 
-A web application that converts and compresses PNG, JPG, JPEG, and GIF images to WebP format.
+A high-performance image compression service that converts PNG, JPG (JPEG), and GIF images to WebP format with optional compression rate and resolution parameters.
 
 [日本語版はこちら](README_ja.md)
 
 ## Features
 
-- **Supported Formats**: PNG, JPG, JPEG, GIF → WebP
-- **Compression Settings**: Adjustable quality (1-100), width, and height
-- **Drag & Drop**: Intuitive file upload interface
-- **Real-time Preview**: Preview of uploaded images
-- **Compression Results**: Display original size, compressed size, and compression ratio
-- **Download Function**: Download compressed images
+- **Image Format Support**: PNG, JPG (JPEG), GIF → WebP conversion
+- **Compression Options**: Configurable quality, width, and height parameters
+- **Web Interface**: Simple and intuitive single-page HTML interface
+- **API Endpoints**: RESTful API for programmatic access
+- **High Performance**: Built with Go for optimal performance
+- **Docker Support**: Easy deployment with Docker and Docker Compose
 
-## Technology Stack
+## Quick Start
 
-- **Backend**: Go + Gin
-- **Image Processing**: imaging + webp
-- **Frontend**: HTML + CSS + JavaScript
-- **Container**: Docker + Docker Compose
+### Using Docker Compose (Recommended)
 
-## Setup
-
-### Prerequisites
-
-- Docker
-- Docker Compose
-
-### Quick Start
-
-1. Clone the repository
 ```bash
-git clone <repository-url>
+# Clone the repository
+git clone https://github.com/shinya/image-compressor.git
 cd image-compressor
+
+# Start the service
+docker-compose up -d
+
+# Access the web interface
+open http://localhost:8080
 ```
 
-2. Start with Docker Compose
+### Manual Installation
+
 ```bash
-docker-compose up --build
+# Prerequisites
+sudo apt-get update
+sudo apt-get install -y gcc libc6-dev libwebp-dev
+
+# Build the application
+go build -o image-compressor ./cmd/server
+
+# Run the application
+./image-compressor
 ```
 
-3. Access in your browser
-```
-http://localhost:8080
-```
+## API Usage
 
-## Usage
-
-1. **Image Upload**
-   - Drag & drop or click to select an image
-   - Supported formats: PNG, JPG, JPEG, GIF
-   - Maximum file size: 10MB
-
-2. **Compression Settings** (Optional)
-   - **Quality**: Set between 1-100 (default: 80)
-   - **Width**: Specify in pixels (leave blank for auto-adjustment)
-   - **Height**: Specify in pixels (leave blank for auto-adjustment)
-
-3. **Start Compression**
-   - Click "Start Compression" button
-   - Loading indicator will be displayed during processing
-
-4. **View Results & Download**
-   - Compression results will be displayed
-   - Click "Download" button to download the compressed image
-
-## API Specification
-
-### Image Compression API
+### Compress Image
 
 **Endpoint**: `POST /api/compress`
 
-**Request**:
-- `image`: Image file (multipart/form-data)
-- `quality`: Quality (1-100, optional)
-- `width`: Width in pixels (optional)
-- `height`: Height in pixels (optional)
+**Form Data**:
+- `image`: Image file (PNG, JPG, JPEG, GIF)
+- `quality`: Compression quality (0-100, optional)
+- `width`: Target width (optional)
+- `height`: Target height (optional)
 
 **Response**:
 ```json
 {
   "success": true,
-  "data": {
-    "original_filename": "example.png",
-    "compressed_filename": "example_compressed.webp",
-    "original_size": 1024000,
-    "compressed_size": 256000,
-    "compression_ratio": 25.0,
-    "processing_time": 1.23,
-    "download_url": "/api/download/example_compressed.webp"
-  }
+  "message": "Image compressed successfully",
+  "original_size": 1024000,
+  "compressed_size": 256000,
+  "compression_ratio": 75.0,
+  "processing_time": 0.5,
+  "output_file": "compressed_1234567890.webp",
+  "download_url": "/api/download/compressed_1234567890.webp"
 }
 ```
 
-### Download API
+### Download Compressed File
 
-**Endpoint**: `GET /api/download/:filename`
+**Endpoint**: `GET /api/download/{filename}`
 
-**Response**: Compressed image file
+Returns the compressed WebP file.
 
-## Environment Variables
+## Configuration
 
-| Variable | Default Value | Description |
-|----------|---------------|-------------|
-| `PORT` | `8080` | Server port number |
-| `DOWNLOAD_DIR` | `./downloads` | Directory for compressed files |
+Environment variables can be used to configure the application:
+
+```bash
+PORT=8080                    # Server port (default: 8080)
+DOWNLOAD_DIR=./downloads     # Download directory (default: ./downloads)
+MAX_FILE_SIZE=10485760       # Maximum file size in bytes (default: 10MB)
+DEFAULT_QUALITY=80          # Default compression quality (default: 80)
+DEFAULT_WIDTH=1920          # Default width (default: 1920)
+DEFAULT_HEIGHT=1080         # Default height (default: 1080)
+```
 
 ## Development
 
-### Local Development Environment
+### Prerequisites
 
-1. Install Go
-2. Install dependencies
-```bash
-go mod tidy
-```
+- Go 1.24 or later
+- GCC and development libraries
+- libwebp-dev
 
-3. Start the server
-```bash
-go run cmd/server/main.go
-```
-
-### Dependencies
+### Local Development
 
 ```bash
-go get github.com/gin-gonic/gin
-go get github.com/chai2010/webp
-go get github.com/disintegration/imaging
+# Install dependencies
+go mod download
+
+# Run the application
+go run ./cmd/server
+
+# Run tests
+go test ./...
+
+# Build for development
+go build -o image-compressor ./cmd/server
 ```
 
-## Releases
+### Docker Development
 
-The latest release can be found on the [GitHub releases page](https://github.com/shinya/image-compressor/releases).
+```bash
+# Build the development image
+docker build -t image-compressor-dev .
 
-### Installation
+# Run with volume mount for development
+docker run -p 8080:8080 -v $(pwd):/app image-compressor-dev
+```
 
-Download the latest release for your platform from the [releases page](https://github.com/shinya/image-compressor/releases).
+## Project Structure
+
+```
+image-compressor/
+├── cmd/server/              # Main application entry point
+│   └── main.go             # Server startup and configuration
+├── internal/
+│   ├── api/                # HTTP handlers and routing
+│   │   └── handlers.go     # API endpoints implementation
+│   ├── config/             # Configuration management
+│   │   └── config.go       # Environment and app configuration
+│   └── service/            # Business logic and image processing
+│       └── image_service.go # Image compression logic
+├── web/static/             # Frontend files
+│   ├── index.html          # Main HTML page
+│   ├── style.css           # CSS styles
+│   └── app.js              # JavaScript functionality
+├── downloads/              # Compressed file storage
+├── scripts/                # Utility scripts
+│   └── pre-build.sh       # Pre-build validation script
+├── .github/workflows/      # GitHub Actions
+│   └── test.yml           # Automated testing workflow
+├── Dockerfile              # Production Docker image
+├── docker-compose.yml      # Development environment
+├── go.mod                  # Go module dependencies
+├── go.sum                  # Go module checksums
+├── .gitignore              # Git ignore patterns
+├── README.md               # English documentation
+└── README_ja.md           # Japanese documentation
+```
+
+## Technology Stack
+
+- **Backend**: Go 1.24 + Gin web framework
+- **Image Processing**: 
+  - `github.com/chai2010/webp` for WebP encoding
+  - `github.com/disintegration/imaging` for image manipulation
+- **Frontend**: HTML5 + CSS3 + Vanilla JavaScript
+- **Container**: Docker + Docker Compose
+- **Testing**: GitHub Actions for automated testing
 
 ## Contributing
 
-Pull requests and issue reports are welcome.
+Contributions are welcome! Please feel free to submit a Pull Request.
+

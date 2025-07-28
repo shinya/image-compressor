@@ -153,7 +153,7 @@ async function handleCompress() {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            showResult(data.data);
+            showResult(data);
         } else {
             showError(data.error || '圧縮に失敗しました。');
         }
@@ -186,7 +186,7 @@ function showResult(data) {
     originalSize.textContent = formatFileSize(data.original_size);
     compressedSize.textContent = formatFileSize(data.compressed_size);
     compressionRatio.textContent = data.compression_ratio.toFixed(1) + '%';
-    filename.textContent = data.compressed_filename;
+    filename.textContent = data.output_file;
     
     downloadBtn.href = data.download_url;
     downloadBtn.style.display = 'inline-block';
