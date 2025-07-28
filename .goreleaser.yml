@@ -57,7 +57,4 @@ changelog:
 release:
   name_template: '{{ tr .Tag "-" " " | title }}'
   draft: false
-  prerelease: false
-
-dist:
-  name: image-compressor 
+  prerelease: false 
